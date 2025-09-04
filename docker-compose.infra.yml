@@ -1,3 +1,9 @@
+version: "3.8"
+
+networks:
+  table2table-net:
+    driver: bridge
+
 services:
   # ─── Zookeeper ────────────────────────────────────────────
   zookeeper:

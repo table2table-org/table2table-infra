@@ -1,0 +1,219 @@
+version: "3.8"
+
+networks:
+  table2table-net:
+    external: true
+
+secrets:
+  maven-settings:
+    file: ./settings.xml.template
+
+services:
+  discovery-server:
+    build:
+      context: ../table2table-discovery-service
+      dockerfile: Dockerfile.dev
+      secrets:
+        - maven-settings
+    container_name: discovery-server
+    networks:
+      - table2table-net
+    ports:
+      - "8761:8761"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://discovery-server:8761/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
+  config-service:
+    build:
+      context: ../table2table-config-service
+      dockerfile: Dockerfile.dev
+      secrets:
+        - maven-settings
+    container_name: config-service
+    networks:
+      - table2table-net
+    restart: unless-stopped
+    depends_on:
+      discovery-server:
+        condition: service_started
+    ports:
+      - "8888:8080"
+    healthcheck:
+      test: ["CMD","curl","-f","http://config-service:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
+  api-gateway:
+    build:
+      context: ../table2table-gateway-service
+      dockerfile: Dockerfile.dev
+      secrets:
+        - maven-settings
+    container_name: api-gateway
+    networks:
+      - table2table-net
+    restart: unless-stopped
+    depends_on:
+      discovery-server:
+        condition: service_started
+      config-service:
+        condition: service_started
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: [ "CMD","curl","-f","http://api-gateway:8080/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
+  auth-service:
+    build:
+      context: ../table2table-auth-service
+      dockerfile: Dockerfile.dev
+      secrets:
+        - maven-settings
+    container_name: auth-service
+    networks:
+      - table2table-net
+    restart: unless-stopped
+    depends_on:
+      discovery-server:
+        condition: service_started
+      config-service:
+        condition: service_started
+    ports:
+      - "8081:8080"
+    healthcheck:
+      test: ["CMD","curl","-f","http://auth-service:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
+  user-service:
+    build:
+      context: ../table2table-user-service
+      dockerfile: Dockerfile.dev
+      secrets:
+        - maven-settings
+    container_name: user-service
+    networks:
+      - table2table-net
+    restart: unless-stopped
+    depends_on:
+      discovery-server:
+        condition: service_started
+      config-service:
+        condition: service_started
+    ports:
+      - "8082:8080"
+    healthcheck:
+      test: ["CMD","curl","-f","http://user-service:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
+  community-service:
+    build:
+      context: ../table2table-community-service
+      dockerfile: Dockerfile.dev
+      secrets:
+        - maven-settings
+    container_name: community-service
+    networks:
+      - table2table-net
+    restart: unless-stopped
+    depends_on:
+      discovery-server:
+        condition: service_started
+      config-service:
+        condition: service_started
+    ports:
+      - "8083:8080"
+    healthcheck:
+      test: ["CMD","curl","-f","http://community-service:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
+  food-service:
+    build:
+      context: ../table2table-food-service
+      dockerfile: Dockerfile.dev
+      secrets:
+        - maven-settings
+    container_name: food-service
+    networks:
+      - table2table-net
+    restart: unless-stopped
+    depends_on:
+      discovery-server:
+        condition: service_started
+      config-service:
+        condition: service_started
+    ports:
+      - "8084:8080"
+    healthcheck:
+      test: ["CMD","curl","-f","http://food-service:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
+  order-service:
+    build:
+      context: ../table2table-order-service
+      dockerfile: Dockerfile.dev
+      secrets:
+        - maven-settings
+    container_name: order-service
+    networks:
+      - table2table-net
+    restart: unless-stopped
+    depends_on:
+      discovery-server:
+        condition: service_started
+      config-service:
+        condition: service_started
+    ports:
+      - "8086:8080"
+    healthcheck:
+      test: ["CMD","curl","-f","http://order-service:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
+  payment-service:
+    build:
+      context: ../table2table-payment-service
+      dockerfile: Dockerfile.dev
+      secrets:
+        - maven-settings
+    container_name: payment-service
+    networks:
+      - table2table-net
+    restart: unless-stopped
+    depends_on:
+      discovery-server:
+        condition: service_started
+      config-service:
+        condition: service_started
+    ports:
+      - "8085:8080"
+    healthcheck:
+      test: [ "CMD","curl","-f","http://payment-service:8080/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
